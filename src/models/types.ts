@@ -1,3 +1,17 @@
+import { createAsyncThunk } from "@reduxjs/toolkit"
+import { AppDispatch, RootState } from "../slices"
+
+
+export type FormValues = {
+  id: string;
+  limit: string;
+};
+
+export enum FormValuesId {
+	id = 'id',
+	limit = 'limit',
+}
+
 export interface MetaDataInterface {
     count: number,
     limit: number,
