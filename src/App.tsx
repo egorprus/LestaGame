@@ -1,28 +1,20 @@
-import React, { useEffect } from "react";
+import React from "react";
 import "./App.scss";
 import { Menu } from "./components/Menu/Menu";
-import { TankInformationTable } from "./components/Table/Table";
-import { useApi } from "./hooks/Api/useApi";
-import { useQuery } from "@apollo/client";
-import { GET_ALL_ID } from "./query/ship";
+import { List } from "./components/List/List";
+import { RootState } from "./slices";
+import { useSelector } from "react-redux";
+import { useApiCall } from "./hooks/useApiCall";
 
 function App() {
-	// const {getList} = useApi();
-	const {data, loading, error} = useQuery(GET_ALL_ID);
+  const { loading } = useSelector((state: RootState) => state.list);
 
-	useEffect(() => {
-		if(!loading) {
-			console.log(data.vehicles, 'data=====')
-		}
-	}, [data, loading])
-	// useEffect(() => {
-	// 	getList();
-  // }, [getList]);
-
+	useApiCall();
+	
   return (
     <div className="App">
       <Menu />
-      <TankInformationTable />
+      <List loading={loading} />
     </div>
   );
 }

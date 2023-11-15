@@ -1,57 +1,32 @@
-import { createAsyncThunk } from "@reduxjs/toolkit"
-import { AppDispatch, RootState } from "../slices"
+import { FilterOptions } from "./enums";
 
-
-export type FormValues = {
-  id: string;
-  limit: string;
-};
-
-export enum FormValuesId {
-	id = 'id',
-	limit = 'limit',
+export interface ResponseShip {
+  title: string;
+  description: string;
+  icons: {
+    large: string;
+    medium: string;
+  };
+  level: string;
+  nation: { title: string };
+  type: { title: string };
 }
 
-export interface MetaDataInterface {
-    count: number,
-    limit: number,
-    page: number,
-    page_total: number,
-    total: number
-}
-  
-export  interface TankInterface {
-    name: string,
-    tank_id: string,
-    nation?: string,
-    images?: {
-        big_icon: string,
-        contour_icon: string,
-        small_icon: string
-    },
-    type?: string,
-    tier?: number
+export interface ShipInterface {
+  title: string;
+  description: string;
+  icons: {
+    large: string;
+    medium: string;
+  };
+  level: string;
+  nation: string;
+  type: string;
 }
 
-export interface FilterPropertyInterface {
-    name: string,
-    tank_id: string
-}
+export type FilterProperty =
+  | FilterOptions.level
+  | FilterOptions.nation
+  | FilterOptions.type;
 
-export interface FilterInterface {
-    [property: string]: FilterPropertyInterface
-}
-  
-export  interface ResponseRequest {
-    meta: MetaDataInterface,
-    status: string,
-    data: {
-        [property: string]: TankInterface,
-    }
-}
-
-export interface ResponseFilterRequest {
-    meta: MetaDataInterface,
-    status: string,
-    data: FilterInterface
-}
+export type FilterElementState = FilterProperty | null;

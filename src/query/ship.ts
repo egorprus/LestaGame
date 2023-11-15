@@ -18,23 +18,13 @@ export const GET_ALL_SHIPS = gql`
         }
       }
       nation {
-        name
         title
-        color
         icons {
           small
           medium
           large
         }
       }
-    }
-  }
-`;
-
-export const GET_ALL_ID = gql`
-  query getAllId {
-    vehicles {
-      id
     }
   }
 `;
