@@ -1,91 +1,49 @@
-import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { MetaDataInterface, ResponseRequest, TankInterface } from "../models/types";
-import { RequestStatus } from "../models/enums";
-import { apiCall } from "../utils/apiCall";
+import { createSlice } from "@reduxjs/toolkit";
+import { FilterProperty, ShipInterface } from "../models/types";
 
 interface InitialState {
-  list: TankInterface[];
-  filteredList: TankInterface[];
-  meta: MetaDataInterface;
-  status: string;
-  error: string;
+  list: ShipInterface[];
+  filteredList: ShipInterface[];
+	currentPage: ShipInterface[];
+	indexCurrentPage: number;
+  loading: boolean;
+	filter: Partial<Record<FilterProperty, string>>;
 }
-
-export interface FetchResult {
-  list: TankInterface[];
-  meta: MetaDataInterface;
-}
-
-interface FetchListProp {
-  itemsPerPage: string;
-  currentPage: number;
-}
-
-export const fetchList = createAsyncThunk(
-  "listSlice/fetchList",
-  async (requestParametrs: FetchListProp, { rejectWithValue }) => {
-    try {
-      const { itemsPerPage, currentPage } = requestParametrs;
-      const response = await apiCall({ itemsPerPage, currentPage });
-      const data: ResponseRequest = await response.json();
-      const list = Object.values(data.data).filter((item) => item);
-      const meta = data.meta;
-      return { list, meta };
-    } catch (e) {
-      return rejectWithValue("error");
-    }
-  }
-);
 
 const initialState: InitialState = {
   list: [],
   filteredList: [],
-  meta: {
-    count: 10,
-    limit: 10,
-    page: 1,
-    page_total: 0,
-    total: 0,
-  },
-  status: "",
-  error: "",
+	currentPage: [],
+	indexCurrentPage: 0,
+  loading: true,
+	filter: {},
 };
 
 const listSlice = createSlice({
   name: "listSlice",
   initialState,
   reducers: {
-    saveList: (state, action) => {
+    setDefaultList: (state, action) => {
       state.list = action.payload;
-      state.status = RequestStatus.succes;
+			state.filteredList = action.payload;
+			state.currentPage = action.payload.slice(0, 10);
+      state.loading = false;
     },
-    startLoading: (state) => {
-      state.status = RequestStatus.loading;
+		setFilteredList: (state, action) => {
+      state.filteredList = action.payload;
+			state.currentPage = action.payload.slice(0, 10);
     },
-  },
-  extraReducers: {
-    [fetchList.pending.toString()]: (state: InitialState) => {
-      state.status = "loading";
-      state.error = "";
-    },
-    [fetchList.fulfilled.toString()]: (
-      state: InitialState,
-      action: PayloadAction<FetchResult>
-    ) => {
-      state.status = "succes";
-      state.list = action.payload.list;
-      state.meta = action.payload.meta;
-    },
-    [fetchList.rejected.toString()]: (
-      state: InitialState,
-      action: PayloadAction<string>
-    ) => {
-      state.status = "failed";
-      state.error = action.payload;
-    },
+		setCurrentPage: (state, action) => {
+			state.indexCurrentPage = action.payload;
+			state.currentPage = state.filteredList.slice(action.payload, action.payload + 10);
+		},
+		setFilterValue: (state, action) => {
+			console.log(action.payload);
+			state.filter = action.payload;
+		}
   },
 });
 
-export const { saveList, startLoading } = listSlice.actions;
+export const { setDefaultList, setCurrentPage, setFilteredList, setFilterValue } = listSlice.actions;
 
 export default listSlice.reducer;

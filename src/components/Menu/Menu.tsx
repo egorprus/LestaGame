@@ -1,39 +1,91 @@
-import React from "react";
-import { useFilter } from "../../hooks/Filter/useFilter";
-import { useApi } from "../../hooks/Api/useApi";
-import { MenuInput } from "./components/MenuInput/MenuInput";
-import { MenuButton } from "./components/MenuButton/MenuButton";
-import { Pagination } from "./Pagination/Pagination";
+import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "../../slices";
+import { RootState, useAppDispatch } from "../../slices";
+import { Pagination } from "./components/Pagination/Pagination";
+import { FilterOptions } from "../../models/enums";
+import { setFilterValue } from "../../slices/listSlice";
+import { getNextPrevPagesIndex } from "../../utils";
+import { MenuItem } from "./components/MenuItem/MenuItem";
+import { FilterProperty } from "../../models/types";
+
+type PagesT = {
+	prev: number | null,
+	next: number | null,
+}
 
 export const Menu = () => {
-  const { filtereID, itemsPerPage } = useSelector(
-    (state: RootState) => state.filter
+  const dispatch = useAppDispatch();
+  const { indexCurrentPage, filteredList, filter } = useSelector(
+    (state: RootState) => state.list
   );
-  const { getFilteredList } = useApi();
-  const { changePageItemLimit, changeFilteredIDs } = useFilter();
+  const [pages, setPages] = useState<PagesT>(
+    getNextPrevPagesIndex(indexCurrentPage, filteredList.length)
+  );
+  const [filterInputs, setFilterInputs] = useState<
+    Partial<Record<FilterProperty, string>>
+  >({});
+
+  useEffect(() => {
+    setPages(getNextPrevPagesIndex(indexCurrentPage, filteredList.length));
+  }, [indexCurrentPage, filteredList.length]);
+
+  const handleClick = useCallback(
+    (filter: FilterOptions) => {
+      if (filter === FilterOptions.default) {
+        dispatch(setFilterValue({}));
+        setFilterInputs({});
+      } else {
+        dispatch(setFilterValue(filterInputs));
+      }
+    },
+    [filterInputs, dispatch]
+  );
+
+  const handleChange = (
+    event: ChangeEvent<HTMLInputElement>,
+    key: FilterOptions
+  ) => {
+    setFilterInputs({ [key]: event.target.value });
+  };
 
   return (
     <menu className="menu">
-      <form className="form">
-        <div className="form__row">
-          <MenuInput
-            value={filtereID}
-            handleChange={changeFilteredIDs}
-            placeholder="Enter name"
+      <div className="filter">
+        <ul className="filter-list">
+          <MenuItem
+            option={FilterOptions.default}
+            handleClick={() => handleClick(FilterOptions.default)}
           />
-          <MenuButton text="Filter" handleClick={getFilteredList} />
-        </div>
-        <div className="form__row">
-          <MenuInput
-            value={itemsPerPage}
-            handleChange={changePageItemLimit}
-            placeholder="Enter limit"
+          <MenuItem
+            isActive={Object.keys(filter)[0] === FilterOptions.level}
+            option={FilterOptions.level}
+            handleClick={() => handleClick(FilterOptions.level)}
+            value={filterInputs.level}
+            handleChange={(event: ChangeEvent<HTMLInputElement>) =>
+              handleChange(event, FilterOptions.level)
+            }
           />
-        </div>
-      </form>
-      {/* <Pagination /> */}
+          <MenuItem
+            isActive={Object.keys(filter)[0] === FilterOptions.nation}
+            option={FilterOptions.nation}
+            handleClick={() => handleClick(FilterOptions.nation)}
+            value={filterInputs.nation}
+            handleChange={(event: ChangeEvent<HTMLInputElement>) =>
+              handleChange(event, FilterOptions.nation)
+            }
+          />
+          <MenuItem
+            isActive={Object.keys(filter)[0] === FilterOptions.type}
+            option={FilterOptions.type}
+            handleClick={() => handleClick(FilterOptions.type)}
+            value={filterInputs.type}
+            handleChange={(event: ChangeEvent<HTMLInputElement>) =>
+              handleChange(event, FilterOptions.type)
+            }
+          />
+        </ul>
+      </div>
+      <Pagination next={pages.next} prev={pages.prev} />
     </menu>
   );
 };
